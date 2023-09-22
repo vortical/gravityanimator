@@ -2,18 +2,21 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import reportWebVitals from './reportWebVitals';
+import { Body, Coord, GravityAnimator}  from './components/animator'
+
+const bodies:Body[] = [
+  new Body(7.3477e22, 1737400, {x:384400000, y:0} as Coord, {x:0, y:1023} as Coord, '#00ff00'),
+  new Body(5.972e24, 6371000, {x:0, y:0} as Coord, {x:0, y:0} as Coord,'#ff0000'),
+
+];
+const animator: GravityAnimator = new GravityAnimator(bodies);
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+
 root.render(
   <React.StrictMode>
-    <App />
+    <App animator={animator}/>
   </React.StrictMode>
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
