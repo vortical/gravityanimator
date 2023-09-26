@@ -1,11 +1,27 @@
 import React from 'react';
 import { AnimatedCanvas } from './components/AnimatedCanvas';
 import { GravityAnimator } from './components/animator';
+import { Button } from './components/Button';
+import { useState } from 'react';
+
 function App(props: any) {
-  const { animator } = props;
+
+  const [animator, setAnimator] = useState(props.animator);
+
+
+
+  function onLeaveTrace(e: any): void {
+    
+    console.log("clicked")
+    const leaveTrace = animator.leaveTrace;
+    animator.setLeaveTrace(!leaveTrace);
+  } 
+
   return (
-    <div>
+    <div className="app">
+      <Button  name='Leave Trace' onClick={onLeaveTrace}/>
       <AnimatedCanvas animator={animator} />
+
     </div>
   );
 }

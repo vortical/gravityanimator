@@ -21,13 +21,14 @@ export class Body{
   position: Coord;
   speed: Coord;
   color: string;
-  
+
   constructor(mass: number, radius: number, position: Coord, speed: Coord, color: string){
     this.mass = mass;
     this.radius = radius;
     this.position = position;
     this.speed = speed;
-    this.color = color;;
+    this.color = color;
+
   }
 };
 const G: number = 6.67e-11;
@@ -66,21 +67,26 @@ export class GravityAnimator {
 
   days: number;
   timeSecs: number = 0;
+  leaveTrace: boolean;
 
-  constructor(bodies: Body[]) {
+  constructor(bodies: Body[], leaveTrace: boolean = true) {
     this.x = 0;
     this.bodies = bodies;
     this.days = 0;
+    this.leaveTrace = leaveTrace;
   }
 
+  setLeaveTrace(value: boolean){
+    this.leaveTrace = value;
+  }
 
   calculateNext(width: number, height: number, time: number){
 
     this.timeSecs += time;
 
-    this.days =this.timeSecs/86400*7;
-    if((this.timeSecs % 86400*7) == 0) {
-      console.log("weeks"+this.days);
+    this.days =this.timeSecs/86400;
+    if((this.timeSecs % 86400) == 0) {
+      console.log("days"+this.days);
     }
 
     // force of body 1 on body 2
@@ -120,7 +126,6 @@ export class GravityAnimator {
     }
 
     function speeds(body: Body, acc: Coord, time: number): Coord{
-      //vo + a t
       return {
         x: body.speed.x + acc.x * time,
         y: body.speed.y + acc.y * time
@@ -128,28 +133,37 @@ export class GravityAnimator {
     }
 
     function positions(body: Body, acc: Coord, time: number): Coord {
-      // xo + vo t + at2/2
       return {
         x: body.position.x + (body.speed.x * time)+ (acc.x * time * time)/2,
         y: body.position.y + (body.speed.y * time)+ (acc.y * time * time)/2,
       };
     }
 
+    let accelerationContributions: Coord[][] = [];
 
-    // for now, just 2 bodies...
-    const force = gravityForce(this.bodies[0], this.bodies[1]);
-    const a = accelerations(this.bodies[0], this.bodies[1], force);
-    const body1Speed = speeds(this.bodies[0],a[0], time)
-    const body2Speed = speeds(this.bodies[1],a[1], time)
+    for(let i = 0 ; i< this.bodies.length; i++){
+      for(let j = 0; j< this.bodies.length; j++){
 
-    const body1Pos = positions(this.bodies[0],a[0], time);
-    const body2Pos = positions(this.bodies[1],a[1], time);
-
-    this.bodies[0].position = body1Pos;
-    this.bodies[1].position = body2Pos;
-    
-    this.bodies[0].speed = body1Speed;
-    this.bodies[1].speed = body2Speed;
+        if(i < j){
+          const aij_ji = accelerations(this.bodies[i], this.bodies[j], gravityForce(this.bodies[i], this.bodies[j]));
+          if (!accelerationContributions[i]){
+            accelerationContributions[i] = [];
+          }
+          accelerationContributions[i][j] = aij_ji[0];
+          if (!accelerationContributions[j]){
+            accelerationContributions[j] = [];
+          }  
+          accelerationContributions[j][i] = aij_ji[1];
+        }
+      }
+      // a body's total acceleration is the sum of all contributions from other bodies.
+      let bodyAcceleration: Coord = accelerationContributions[i].reduce((accumulator, current) =>  {
+        return {x: (current.x + accumulator.x), y: (current.y + accumulator.y)}
+      },  {x: 0, y:0}); 
+      
+      this.bodies[i].position = positions(this.bodies[i],bodyAcceleration, time);
+      this.bodies[i].speed = speeds(this.bodies[i],bodyAcceleration, time)
+    }
 
   }
 
@@ -160,7 +174,7 @@ export class GravityAnimator {
     ctx.fillStyle = body.color; // like '#aabbcc'
     const position = view.translate(body.position);
     const radius = view.translateScalar(body.radius);
-    ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI, false);
+    ctx.arc(position.x, position.y, radius < 1 ? 1: radius, 0, 2 * Math.PI, false);
     ctx.fill();
   }
 
@@ -180,12 +194,16 @@ export class GravityAnimator {
     const width = canvas.width;
     const height = canvas.height;
 
-    const view: ViewPort = new ViewPort({x: width, y: height}, {x:1000000000, y:1000000000})
+    const view: ViewPort = new ViewPort({x: width, y: height}, {x:(149597870700)*2.1, y:(149597870700)*2.1})
     
-    this.calculateNext(width, height, 1);
+    for(let i = 0; i< 10000; i++){
+      this.calculateNext(width, height, 1);
+    }
 
-    
-   // ctx.clearRect(0,0,width, height);
+    if (!this.leaveTrace){ 
+      ctx.clearRect(0,0,width, height);
+    }
+
     this.bodies.forEach((b) => this.drawBody(b, ctx, view));
   }
    

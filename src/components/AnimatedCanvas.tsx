@@ -3,6 +3,10 @@ import { GravityAnimator, DrawProps } from "./animator";
 
 export  function AnimatedCanvas(props: {animator: GravityAnimator}) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    if (canvasRef.current){
+        const height = canvasRef.current.clientHeight;
+        const width = canvasRef.current.clientHeight;
+    }
     const { animator } = props;
 
     function animate(){
@@ -23,10 +27,12 @@ export  function AnimatedCanvas(props: {animator: GravityAnimator}) {
 
   return (
     <div>
-        <canvas 
+        <canvas className="appcanvas" 
             ref={canvasRef}  
-            width={960} 
-            height={960} 
+            width={canvasRef.current?.clientWidth}
+            height={canvasRef.current?.clientHeight}
+        
+       
         />
     </div>
   );
