@@ -1,7 +1,6 @@
 import React from 'react';
 import { AnimatedCanvas } from './components/AnimatedCanvas';
 import { Animator } from './animators/animator';
-import { Button } from './components/Button';
 import { useState } from 'react';
 
 function App(props: any) {
@@ -16,7 +15,7 @@ function App(props: any) {
 
   return (
     <div className="app">
-      <Button  name='Leave Trace' onClick={onLeaveTrace}/>
+      <button onClick={onLeaveTrace}>Leave Trace</button>
       <AnimatedCanvas animator={animator} />
     </div>
   );

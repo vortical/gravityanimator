@@ -95,7 +95,7 @@ export class GravityAnimator implements Animator{
     this.viewSize = size;
   }
 
-  calculateNext(width: number, height: number, time: number) {
+  calculateBodyProperties(width: number, height: number, time: number) {
     // force of body 1 on body 2
     function gravityForce(body1: Body, body2: Body): Coord {
       // distance based/caused from body 1
@@ -194,7 +194,7 @@ export class GravityAnimator implements Animator{
 
     // loop 1000 times at 1 second per iteration 
     for (let i = 0; i < 1000; i++) {
-      this.calculateNext(width, height, 10);
+      this.calculateBodyProperties(width, height, 10);
     }
 
     if (!this.leaveTrace || this.isDirty) {
