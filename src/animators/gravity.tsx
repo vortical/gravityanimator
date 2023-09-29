@@ -162,7 +162,7 @@ export class GravityAnimator implements Animator{
     function positions(body: Body, acc: Coord, time: number): Coord {
       return {
         x: body.position.x + (body.speed.x * time) + (acc.x * time * time) / 2,
-        y: body.position.y + (body.speed.y * time) + (acc.y * time * time) / 2,
+        y: body.position.y + (body.speed.y * time) + (acc.y * time * time) / 2  
       };
     }
 
@@ -227,7 +227,7 @@ export class GravityAnimator implements Animator{
     const view: ViewPort = new ViewPort({ x: width, y: height }, { x: biggestAxe.x * 2, y: biggestAxe.y * 2 }, this.offset)
 
     // loop 1000 times at 1 second per iteration 
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 500; i++) {
       this.calculateBodyProperties(width, height, 1);
     }
 

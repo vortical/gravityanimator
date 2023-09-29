@@ -3,7 +3,7 @@ import { Animator } from "../animators/animator";
 
 export function AnimatedCanvas(props: { animator: Animator }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
+  let frames = 0;
   const [size, setSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight
@@ -17,12 +17,14 @@ export function AnimatedCanvas(props: { animator: Animator }) {
   const { animator } = props;
 
   function animate() {
+    frames++;
     if (!canvasRef.current) {
       return;
     }
     animator.draw({ canvasRef });
     requestAnimationFrame(animate);
   };
+
 
   React.useEffect(() => {
     const checkSize = () => {
@@ -44,19 +46,16 @@ export function AnimatedCanvas(props: { animator: Animator }) {
   const onMouseMove: MouseEventHandler<HTMLCanvasElement> = (e) => {
     e.preventDefault();
     if (isPanning) {
-      const pan = { x: e.clientX - pressStart.x, y: e.clientY - pressStart.y };
-      setOffset(pan);
+      setOffset({ x: e.clientX - pressStart.x, y: e.clientY - pressStart.y });
+      if (offset.x != 0 || offset.y != 0) {
+        animator.setOffset(offset);
+      }
     }
   };
 
   const onMouseUp: MouseEventHandler<HTMLCanvasElement> = (e) => {
-    if (pressStart) {
-      const pan = { x: e.clientX - pressStart.x, y: e.clientY - pressStart.y };
-      setOffset(pan);
+    if (isPanning) {
       setIsPanning(false);
-      if (offset.x != 0 || offset.y != 0) {
-        animator.setOffset(offset);
-      }
     }
   };
 

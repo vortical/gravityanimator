@@ -11,8 +11,8 @@ const systems: Body[][] = [
     new Body("Mercury", 3.3022e23, 4878000/2, {x:57900000000, y:0} as Coord, {x:0, y:47400} as Coord,'#aaaaaa'),
     
     new Body("Venus", 4.869e24, 12756000/2, {x:0, y:108200000000} as Coord, {x:-35000, y:0} as Coord, '#00ff00'),
-    new Body("Earth", 5.974e24, 12756000/2, {x:-149597870700, y:0} as Coord, {x:0, y:-30000} as Coord,'#0000ff'),
-    // new Body("ISS", 4.19e5, 108, {x: -149597870700+12756000/2+410000, y:0} as Coord, {x:0, y: -30000+7679} as Coord, '#ffffff'),
+    new Body("Earth", 5.9736e24, 12756000/2, {x:-149597870700, y:0} as Coord, {x:0, y:-30000} as Coord,'#0000ff'),
+    new Body("ISS", 4.19e5, 108, {x: -149597870700+12756000/2+410000, y:0} as Coord, {x:0, y: -30000+7679} as Coord, '#ffffff'),
     new Body("Moon", 7.3477e22, 1737400, {x: -149597870700+384400000, y:0} as Coord, {x:0, y: -30000+1023} as Coord, '#00ff00'),
     new Body("Mars", 6.4185e23, 6371000/2, {x:0, y:-227900000000} as Coord, {x:24100, y:0} as Coord,'#ff0000'),
     new Body("Jupiter", 1898e24, 142984000/2, {x:0, y:-778500000000} as Coord, {x:13100, y:0} as Coord,'#ff8800'),

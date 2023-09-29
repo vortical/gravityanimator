@@ -1,20 +1,9 @@
 import React from 'react';
 import { AnimatedCanvas } from './components/AnimatedCanvas';
-import { Animator } from './animators/animator';
 import { useState } from 'react';
 
 function App(props: any) {
-
   const [animator, setAnimator] = useState(props.animator);
-
-
-
-  // const onLeaveTrace(e: any): void {
-  //   const leaveTrace = animator.leaveTrace;
-  //   animator.setLeaveTrace(!leaveTrace);
-  // } 
-
-
 
   return (
     <div className="app">
