@@ -1,4 +1,4 @@
-import React, { useState, useRef, MouseEvent, MouseEventHandler, KeyboardEventHandler } from "react";
+import React, { useState, useRef, MouseEvent, MouseEventHandler, KeyboardEventHandler, EventHandler } from "react";
 import { Animator, DrawProps } from "../animators/animator";
 
 export function AnimatedCanvas(props: { animator: Animator }) {
@@ -70,10 +70,12 @@ export function AnimatedCanvas(props: { animator: Animator }) {
     if (e.code == "ArrowDown") {
       animator.zoom(-1);
     }
-  }
+  };
+
 
   return (
     <div>
+      {animator.options()}
       <canvas className="appcanvas"
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}

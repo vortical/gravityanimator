@@ -21,6 +21,8 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src"
+    "src",
+    "src/components/*.tsx",
+    "src/animators/*.tsx"
   ]
 }

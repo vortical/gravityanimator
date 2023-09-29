@@ -4,13 +4,15 @@ import { Animator, Coord, DrawProps} from './animator';
 const G: number = 6.67e-11;
 
 export class Body {
+  name: string;
   mass: number;
   radius: number;
   position: Coord;
   speed: Coord;
   color: string;
 
-  constructor(mass: number, radius: number, position: Coord, speed: Coord, color: string) {
+  constructor(name: string, mass: number, radius: number, position: Coord, speed: Coord, color: string) {
+    this.name = name;
     this.mass = mass;
     this.radius = radius;
     this.position = position;
@@ -27,7 +29,7 @@ class ViewPort {
   centerOffsetY: number;
   offsetX: number;
   offsetY: number;
-  centerBody: Body | null = null;
+  centerBody: Body | undefined;
 
   constructor(pixelSize: Coord, worldSize: Coord, offsets: Coord = { x: 0, y: 0 }) {
     this.dx = worldSize.x / pixelSize.x;
@@ -42,7 +44,7 @@ class ViewPort {
     return n / this.dx;
   }
 
-  centerOnBody(body: Body | null) {
+  centerOnBody(body: Body | undefined) {
     this.centerBody = body;
   }
 
@@ -64,6 +66,8 @@ export class GravityAnimator implements Animator{
   offset: Coord;
   viewSize: number;
   isDirty: boolean = false;
+  selectedCenterBody: Body|undefined;
+  isPaused: boolean = false;
 
   constructor(bodies: Body[], leaveTrace: boolean = true, offset: Coord = { x: 0, y: 0 }) {
     function defaultViewSize() {
@@ -75,6 +79,10 @@ export class GravityAnimator implements Animator{
     this.leaveTrace = leaveTrace;
     this.offset = offset;
     this.viewSize = defaultViewSize();
+  }
+
+  togglePause(){
+    this.isPaused = !this.isPaused;
   }
 
   setLeaveTrace(value: boolean) {
@@ -93,6 +101,24 @@ export class GravityAnimator implements Animator{
 
   setViewSize(size: number) {
     this.viewSize = size;
+  }
+
+  onSelectCenterBody(e: any){
+    this.isDirty = true;
+    this.selectedCenterBody = this.bodies.find( b => b.name == e.target.value);
+    console.log("Select center: "+this.selectedCenterBody?.name);
+
+  } 
+
+  options(): JSX.Element {
+    const selectOptions = this.bodies.map( b => (<option key={b.name} value={b.name}>{b.name}</option>));
+  
+    return (<div>
+      <select name="body-selected" value={this.selectedCenterBody?.name} onChange={((that:any) => (e:any) => that.onSelectCenterBody(e))(this)}>
+        <option key="select..." value="">Select center body ...</option>
+        {selectOptions}
+      </select  >
+    </div>);
   }
 
   calculateBodyProperties(width: number, height: number, time: number) {
@@ -173,9 +199,17 @@ export class GravityAnimator implements Animator{
     const radius = view.translateScalar(body.radius);
     ctx.arc(position.x, position.y, radius < 1 ? 1 : radius, 0, 2 * Math.PI, false);
     ctx.fill();
+   if(!this.leaveTrace){
+      ctx.font = '10pt sans-serif';
+      ctx.fillText(body.name, position.x, position.y);
+   }
   }
 
   draw(props: DrawProps) {
+    if(this.isPaused){
+      return;
+    }
+
     const { canvasRef } = props;
     const canvas = canvasRef.current;
     if (!canvas) {
@@ -194,7 +228,7 @@ export class GravityAnimator implements Animator{
 
     // loop 1000 times at 1 second per iteration 
     for (let i = 0; i < 1000; i++) {
-      this.calculateBodyProperties(width, height, 10);
+      this.calculateBodyProperties(width, height, 2);
     }
 
     if (!this.leaveTrace || this.isDirty) {
@@ -203,7 +237,7 @@ export class GravityAnimator implements Animator{
     }
     // We can 'center' our view onto a body. By default it centers on (0,0) which is the sun's position
     // in the array of bodies. Body 3 is the earth, which makes for an intersting animation.
-  //  view.centerOnBody(this.bodies[3]);
+    view.centerOnBody(this.selectedCenterBody);
 
     this.bodies.forEach((b) => this.drawBody(b, ctx, view));
   }

@@ -7,15 +7,21 @@ function App(props: any) {
 
   const [animator, setAnimator] = useState(props.animator);
 
-  function onLeaveTrace(e: any): void {
-    console.log("clicked")
-    const leaveTrace = animator.leaveTrace;
-    animator.setLeaveTrace(!leaveTrace);
-  } 
+
+
+  // const onLeaveTrace(e: any): void {
+  //   const leaveTrace = animator.leaveTrace;
+  //   animator.setLeaveTrace(!leaveTrace);
+  // } 
+
+
 
   return (
     <div className="app">
-      <button onClick={onLeaveTrace}>Leave Trace</button>
+      <div>
+        <button onClick={ e => animator.setLeaveTrace(!animator.leaveTrace) }>Leave Trace</button>
+        <button onClick={ e => animator.togglePause() }>Toggle Pause</button>
+      </div>
       <AnimatedCanvas animator={animator} />
     </div>
   );

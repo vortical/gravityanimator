@@ -19,4 +19,6 @@ export interface Animator {
   setLeaveTrace(value: boolean): void;
   setOffset(offset: Coord): void;
   zoom(z: number): void;
+  options(): JSX.Element;
+  togglePause(): void; 
 }
