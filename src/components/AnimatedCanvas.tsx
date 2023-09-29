@@ -1,5 +1,5 @@
-import React, { useState, useRef, MouseEvent, MouseEventHandler, KeyboardEventHandler, EventHandler } from "react";
-import { Animator, DrawProps } from "../animators/animator";
+import React, { useState, useRef, MouseEventHandler, KeyboardEventHandler } from "react";
+import { Animator } from "../animators/animator";
 
 export function AnimatedCanvas(props: { animator: Animator }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -25,8 +25,6 @@ export function AnimatedCanvas(props: { animator: Animator }) {
   };
 
   React.useEffect(() => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
     const checkSize = () => {
       setSize({
         width: window.innerWidth,
@@ -36,7 +34,7 @@ export function AnimatedCanvas(props: { animator: Animator }) {
 
     window.addEventListener("resize", checkSize);
     requestAnimationFrame(animate);
-  }, []);
+  });
 
   const onMouseDown: MouseEventHandler<HTMLElement> = (e) => {
     setPressStart({ x: e.clientX, y: e.clientY })

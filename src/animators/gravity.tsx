@@ -69,7 +69,7 @@ export class GravityAnimator implements Animator{
   selectedCenterBody: Body|undefined;
   isPaused: boolean = false;
 
-  constructor(bodies: Body[], leaveTrace: boolean = true, offset: Coord = { x: 0, y: 0 }) {
+  constructor(bodies: Body[], leaveTrace: boolean = false, offset: Coord = { x: 0, y: 0 }) {
     function defaultViewSize() {
       return bodies.reduce((accumulator, current) => {
         return Math.max(accumulator, Math.abs(current.position.x), Math.abs(current.position.y));
