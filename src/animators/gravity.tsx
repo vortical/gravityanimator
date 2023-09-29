@@ -228,7 +228,7 @@ export class GravityAnimator implements Animator{
 
     // loop 1000 times at 1 second per iteration 
     for (let i = 0; i < 1000; i++) {
-      this.calculateBodyProperties(width, height, 2);
+      this.calculateBodyProperties(width, height, 1);
     }
 
     if (!this.leaveTrace || this.isDirty) {
