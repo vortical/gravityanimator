@@ -11,6 +11,8 @@ export class Body {
   speed: Coord;
   color: string;
 
+  acceleration: number;
+
   constructor(name: string, mass: number, radius: number, position: Coord, speed: Coord, color: string) {
     this.name = name;
     this.mass = mass;
@@ -18,6 +20,7 @@ export class Body {
     this.position = position;
     this.speed = speed;
     this.color = color;
+    this.acceleration = 0;
   }
 };
 
@@ -121,6 +124,32 @@ export class GravityAnimator implements Animator{
     </div>);
   }
 
+
+  /**
+   * 
+   * Calculates and updates the positions and velocities of the (n-bodies). Accelerations are
+   * based on F = GMiMj/(R*R).
+   * Ax for (Mi) = (GMj/R*R*R)* [x/mag(R)]
+   * Ay for (Mi) = (GMj/R*R*R)* [y/mag(R)]
+   * ...
+   * For each body we currently sum up all the acceleration values with all the other bodies. 
+   * 
+   * For positions:
+   * Xi+1 = Xi + Vi*dt + Ai*(dt*dt)/2
+   * 
+   * Once positions at i+1 are determined, we calculate velocities using the averages of
+   * accelerations at i and i+1; which requires another pass at gathering accelerations 
+   * based on the postision at i+1.
+   *     
+   * So for velocities we use:
+   * Vi+1 = Vi + (Ai + Ai+1)/2*dt
+   * 
+   * 
+   * @param width 
+   * 
+   * @param height 
+   * @param time 
+   */
   calculateBodyProperties(width: number, height: number, time: number) {
     // force of body 1 on body 2
     function gravityForce(body1: Body, body2: Body): Coord {
@@ -144,7 +173,7 @@ export class GravityAnimator implements Animator{
 
     //  based/caused from body 1
     // returns both acceleration vectors (body1 on body2, and body2 on body1) 
-    function accelerations(body1: Body, body2: Body, gravityForces: Coord): Coord[] {
+    function twoBodyAccelerations(body1: Body, body2: Body, gravityForces: Coord): Coord[] {
       const f = gravityForce(body1, body2);
       return [
         { x: f.x / body1.mass, y: f.y / body1.mass },
@@ -166,30 +195,52 @@ export class GravityAnimator implements Animator{
       };
     }
 
-    let accelerationContributions: Coord[][] = [];
+    function accelerations(bodies: Body[]){
+      let accelerationContributions: Coord[][] = [];
+      let bodyAccelerations: Coord[] = [];
 
-    for (let i = 0; i < this.bodies.length; i++) {
-      for (let j = 0; j < this.bodies.length; j++) {
-        if (i < j) { // is a symetric matrix, but with values negated
-          const aij_ji = accelerations(this.bodies[i], this.bodies[j], gravityForce(this.bodies[i], this.bodies[j]));
-          if (!accelerationContributions[i]) {
-            accelerationContributions[i] = [];
+      for (let i = 0; i < bodies.length; i++) {
+        for (let j = 0; j < bodies.length; j++) {
+          if (i < j) { // is a symetric matrix, but with values negated
+            const aij_ji = twoBodyAccelerations(bodies[i], bodies[j], gravityForce(bodies[i], bodies[j]));
+            if (!accelerationContributions[i]) {
+              accelerationContributions[i] = [];
+            }
+            accelerationContributions[i][j] = aij_ji[0];
+            if (!accelerationContributions[j]) {
+              accelerationContributions[j] = [];
+            }
+            accelerationContributions[j][i] = aij_ji[1];
           }
-          accelerationContributions[i][j] = aij_ji[0];
-          if (!accelerationContributions[j]) {
-            accelerationContributions[j] = [];
-          }
-          accelerationContributions[j][i] = aij_ji[1];
         }
+        // a body's total acceleration is the sum of all contributions from other bodies.
+        bodyAccelerations[i] = accelerationContributions[i].reduce((accumulator, current) => {
+          return { x: (current.x + accumulator.x), y: (current.y + accumulator.y) }
+        }, { x: 0, y: 0 });
       }
-      // a body's total acceleration is the sum of all contributions from other bodies.
-      let bodyAcceleration: Coord = accelerationContributions[i].reduce((accumulator, current) => {
-        return { x: (current.x + accumulator.x), y: (current.y + accumulator.y) }
-      }, { x: 0, y: 0 });
-
-      this.bodies[i].position = positions(this.bodies[i], bodyAcceleration, time);
-      this.bodies[i].speed = speeds(this.bodies[i], bodyAcceleration, time)
+      return bodyAccelerations;
     }
+
+    const accelerations_i1 = accelerations(this.bodies);
+
+    for(let i = 0; i < this.bodies.length; i++) {
+        this.bodies[i].position = positions(this.bodies[i], accelerations_i1[i], time);
+    }
+
+    const accelerations_i2 = accelerations(this.bodies);
+    // now speed Vi+1 = Vi + (Ai + Ai+1)dt/2;
+    // Notice we need acceleration at i+1 to calculate speed. Acceleration just depends on position, which we have
+
+    function combine<T>(aa: T[], bb: T[], f:(a:T, b: T)=>T ){
+      return aa.map( (a,i) => f(a, bb[i]));
+    }
+    const avgAccelerations = combine(accelerations_i1, accelerations_i2, (a,b) => {return {x: (a.x + b.x)/2, y: (a.y + b.y)/2};}) ;
+
+    for(let i = 0;  i< this.bodies.length; i++) {
+      const a = accelerations_i1[i].x + accelerations_i1[i].x 
+      this.bodies[i].speed = speeds(this.bodies[i], avgAccelerations[i], time)
+    }
+
   }
 
   drawBody(body: Body, ctx: CanvasRenderingContext2D, view: ViewPort) {
@@ -197,11 +248,11 @@ export class GravityAnimator implements Animator{
     ctx.fillStyle = body.color; // like '#aabbcc'
     const position = view.translate(body.position);
     const radius = view.translateScalar(body.radius);
-    ctx.arc(position.x, position.y, radius < 1 ? 1 : radius, 0, 2 * Math.PI, false);
+    ctx.arc(position.x, position.y, radius < 0.3 ? 0.3 : radius, 0, 2 * Math.PI, false);
     ctx.fill();
    if(!this.leaveTrace){
       ctx.font = '10pt sans-serif';
-      ctx.fillText(body.name, position.x, position.y);
+      ctx.fillText(body.name, position.x+radius, position.y);
    }
   }
 
